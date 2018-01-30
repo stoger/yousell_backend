@@ -34,7 +34,8 @@ let issuesoption = {
     credentials: true,
 };
 
-mongoose.connect('mongodb://localhost:27017/yousell', {
+let mongoURI = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/yousell';
+mongoose.connect(mongoURI, {
     useMongoClient: true
 }, (err, result) => {
     if (err) {
