@@ -36,6 +36,7 @@ let issuesoption = {
 
 let mongoURI = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/yousell';
 mongoose.connect(mongoURI, {
+    uri_decode_auth: true,
     useMongoClient: true
 }, (err, result) => {
     if (err) {
