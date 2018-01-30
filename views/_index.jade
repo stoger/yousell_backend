@@ -1,0 +1,12 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+  form(method='POST' action='/login')
+    label(for='user') Name:
+    input(type='text' name='username')
+    label(for='password') PW:
+    input(type='password' name='password')
+    input(type='hidden' name='_csrf' value='#{_token}')
+    button(type='submit') Login

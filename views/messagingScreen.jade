@@ -1,0 +1,18 @@
+extends layout
+
+block content
+    script(src='/socket.io/socket.io.js')
+    script.
+        var socket = io.connect('http://localhost:3000');
+
+        const test = function sendMessage() {
+            console.log(Document.getElementById('message'));
+            console.log('At least works');
+        }
+
+    h1= "Send a message"
+    form(action='/', method='POST')
+        input(type=hidden, name=sender, value='test_sender')
+        input(type=hidden, name=receiver, value='test_receiver')
+        input(type=text, name=message)
+        button(type=submit onclick='test()') Submit
