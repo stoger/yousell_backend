@@ -69,6 +69,30 @@ let saveNewProductOffer = function (model_params) {
     });
 };
 
+let searchProduct = function(queryString){
+    console.log('queryString', queryString);
+    var art_name_query = {"art_name": {$regex: queryString, $options:"i"}}
+    var art_desc_query = {"art_desc": {$regex: queryString, $options:"i"}}
+
+    return new Promise((resolve, reject) => {
+        return productModel.find({}, (err, prod_doc) => {
+            if (err) {
+                reject(err);
+            }
+
+            if (!prod_doc || prod_doc.length === 0) {
+                reject(new Error({
+                    'Error-Message': 'Trying to fetch products resulted in an empty result, better check the error object',
+                    'Error-Object': prod_doc
+                }));
+            }
+
+            resolve(prod_doc);
+        });
+    });
+}
+
 module.exports = productModel;
+module.exports.searchProduct = searchProduct;
 module.exports.findProductsSortByDate = listElements_SortByDate;
 module.exports.saveProduct = saveNewProductOffer;
