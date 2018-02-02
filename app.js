@@ -11,14 +11,7 @@ let express = require('express'),
     helmet = require('helmet'),
     csrf = require('csurf'),
     cors = require('cors');
-// LocalTunnel = require('node-local-tunnel');
 
-// let NLTunnelOptions = {
-//     remoteHost: 'gehinoasch.com',
-//     localBase: 'http://localhost:8080'
-// };
-
-// LocalTunnel.client(NLTunnelOptions);
 
 let loginRoutes = require('./routes/r_login'),
     listingRoutes = require('./routes/r_items'),

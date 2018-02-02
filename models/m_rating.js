@@ -86,7 +86,7 @@ let updateRatingForUser = (user, rating) => {
                 });
             })
                 .then((result) => resolve(result))
-                .catch(e => reject(e));
+                .catch((e) => reject(e));
         } else {
             reject({ location: 'updateRating' });
         }

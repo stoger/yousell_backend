@@ -76,11 +76,11 @@ router.post('/', (req, res) => {
             });
         })
         .then((finishedOffers) => {
-            let test = jsonArraySort(finishedOffers, 'date')
+            let itemsObj = jsonArraySort(finishedOffers, 'date')
 
             res.setHeader('Content-Type', 'application/json');
             res.json({
-                Items: test
+                Items: itemsObj
             });
         })
         .catch((e) => {
@@ -93,6 +93,7 @@ router.post('/', (req, res) => {
         });
 });
 
+// Add a new product to the database
 router.post('/add', multer({ storage: storage }).array('images[]', FILE_LIMIT), (req, res, next) => {
     if (!req.files) {
         res.writeHead(500, { 'Content-Type': 'application-json' });
@@ -168,5 +169,7 @@ router.post('/add', multer({ storage: storage }).array('images[]', FILE_LIMIT), 
             });
     }
 });
+
+
 
 module.exports = router;
