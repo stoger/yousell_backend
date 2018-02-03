@@ -10,6 +10,11 @@ let productSchema = new Schema({
     date: { type: String, required: true }
 });
 
+if (mongoose.connection.readyState !== 1) {
+    mongoose.connect("mongodb://192.168.1.17/yousell", () => {
+        console.log('MongoDB should now be conneted');
+    });
+}
 let productModel = mongoose.model('Product', productSchema, 'products');
 
 // Searches the Database for elemts which will be mainly used for the site's main page
@@ -47,6 +52,8 @@ let saveNewProductOffer = function (model_params) {
         date: model_params.date
     });
 
+    console.log(productInsertion);
+
     return new Promise((resolve, reject) => {
         productInsertion.save((err, result) => {
             return new Promise((resolve, reject) => {
@@ -75,12 +82,13 @@ let searchProduct = function(queryString){
     var art_desc_query = {"art_desc": {$regex: queryString, $options:"i"}}
 
     return new Promise((resolve, reject) => {
-        return productModel.find({}, (err, prod_doc) => {
+        // { $or: [ { <expression1> }, { <expression2> }, ... , { <expressionN> } ] }
+        return productModel.find({ $or: [ art_name_query, art_desc_query ] }, (err, prod_doc) => {
             if (err) {
                 reject(err);
             }
 
-            if (!prod_doc || prod_doc.length === 0) {
+            if (!prod_doc ) {
                 reject(new Error({
                     'Error-Message': 'Trying to fetch products resulted in an empty result, better check the error object',
                     'Error-Object': prod_doc
