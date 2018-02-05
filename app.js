@@ -16,7 +16,8 @@ let express = require('express'),
 let loginRoutes = require('./routes/r_login'),
     listingRoutes = require('./routes/r_items'),
     messagingRoutes = require('./routes/r_messages'),
-    ratingRoutes = require('./routes/r_rating');
+    ratingRoutes = require('./routes/r_rating'),
+    searchRoutes = require('./routes/r_search');
 
 let app = express();
 app.locals.allowedOrigins = ['http://localhost:3000', 'http://localhost:8080', 'http://172.20.10.4:3000'];
@@ -27,7 +28,7 @@ let issuesoption = {
     credentials: true,
 };
 
-let mongoURI = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/yousell';
+let mongoURI = process.env.MONGOLAB_URI || 'mongodb://192.168.1.17/yousell';
 mongoose.connect(mongoURI, {
     useMongoClient: true
 }, (err, result) => {
@@ -81,6 +82,8 @@ app.use('/login', loginRoutes);
 app.use('/main', listingRoutes);
 app.use('/message', messagingRoutes);
 app.use('/rate', ratingRoutes);
+app.use('/search', searchRoutes);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
