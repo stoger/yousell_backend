@@ -1,0 +1,7 @@
+extends layout
+
+block content
+    h1= 'Chat history'
+    ul
+    each item in history
+        li= item.message

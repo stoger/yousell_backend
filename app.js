@@ -17,7 +17,8 @@ let loginRoutes = require('./routes/r_login'),
     listingRoutes = require('./routes/r_items'),
     messagingRoutes = require('./routes/r_messages'),
     ratingRoutes = require('./routes/r_rating'),
-    searchRoutes = require('./routes/r_search');
+    searchRoutes = require('./routes/r_search'),
+    chattingRoutes = require('./routes/r_chat');
 
 let app = express();
 app.locals.allowedOrigins = ['http://localhost:3000', 'http://localhost:8080', 'http://172.20.10.4:3000'];
@@ -28,30 +29,30 @@ let issuesoption = {
     credentials: true,
 };
 
-let mongoURI = process.env.MONGOLAB_URI || 'mongodb://192.168.1.17/yousell';
+let mongoURI = process.env.MONGOLAB_URI || 'mongodb://localhost:27017/yousell';
 mongoose.connect(mongoURI, {
     useMongoClient: true
 }, (err, result) => {
     if (err) {
         console.log('Error trying to establish DBConnection');
-    } else {
-        console.log('Connected to MongoDB successfully!');
     }
+
+    console.log('Connected to MongoDB successfully!');
 });
 
 // Load the configuration for passport which is located in config/passport.js
 require('./config/passport');
 
 // view engine setup
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'jade');
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(helmet({
     noCache: true,
-    hidePoweredBy: { setTo: 'Default' },
+    hidePoweredBy: { setTo: 'HapiJS' },
     noSniff: true,
     xssFilter: true
 })); // Disable this if it doesn't work anymore
@@ -83,6 +84,7 @@ app.use('/main', listingRoutes);
 app.use('/message', messagingRoutes);
 app.use('/rate', ratingRoutes);
 app.use('/search', searchRoutes);
+app.use('/chat', chattingRoutes)
 
 
 // catch 404 and forward to error handler

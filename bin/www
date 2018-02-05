@@ -21,6 +21,12 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+/**
+ * Setup IO in order to make sure that messaging is enabled at all
+ */
+let pmIO = require('socket.io').listen(server);
+require('../io/private_messaging')(pmIO);
+
 
 /**
  *

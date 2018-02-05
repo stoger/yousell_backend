@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8' lang='de' />
+    <title>SocketIO Test</title>
+</head>
+
+<body>
+    <p>I'm sepp.kreiner</p>
+    <input type="text" name="to" id="msgTo" placeholder='To' />
+    <input type="text" name="message" id="message" placeholer='msg' />
+    <button type="submit" onclick="sendMessage()">Send MSG!</button>
+    <button onclick="disconnectIO()">Disconnect from Socket.IO</button>
+
+    <script src='/socket.io/socket.io.js'></script>
+    <script>
+        var socket = io();
+
+        socket.on('connect', () => {
+            socket.emit('ack user', { name: 'sepp.kreiner' });
+        });
+
+        socket.on('check state', () => {
+            socket.emit('client active', { name: 'sepp.kreiner' });
+        });
+
+        socket.on('send error', (data) => {
+            console.log('Reached send error on clientside');
+            console.log(data);
+        });
+
+        socket.on('msg', (msg) => {
+            console.log(msg);
+        });
+
+        function sendMessage() {
+            socket.emit('private msg', { msg: document.getElementById('message').value, from: 'sepp.kreiner', to: document.getElementById('msgTo').value });
+        }
+
+        function disconnectIO() {
+            socket.emit('leave', { name: 'sepp.kreiner' });
+            socket.close();
+        }
+
+        window.onbeforeunload = () => {
+            disconnectIO();
+        }
+    </script>
+</body>
+
+</html>
