@@ -104,13 +104,12 @@ let findImagesForProduct = function (productQueryResult) {
 };
 
 // Saves an Image to the MongoDB
-// takes the product's idea as well as all images for this certain product as arugments
+// takes the product's id as well as all images for this certain product as arugments
 // returns the finished images as promise
 let saveImageWithProduct = function (prodID, images) {
     let counter = 0;
     let dataArr = [];
 
-    console.log('Images:\t', images);
     let storeImages = new imageModel({
         product: prodID,
         url: images
@@ -119,34 +118,20 @@ let saveImageWithProduct = function (prodID, images) {
     return new Promise((resolve, reject) => {
         return storeImages.save((err, result) => {
             if (err) {
-                console.log('Storing images resulted in error!');
+                ;
                 reject(err);
             }
 
             if (!result) {
-                console.log('Storing images resulted in an empty response!');
                 reject({
                     'Error-Message': 'Trying to store an image in the database resulted in an error, see more @ Error-Object',
                     'Error-Object': result
                 });
             }
 
-            ++counter;
-            dataArr.push(result.url);
-
-            if (counter === images.length) {
-                console.log('Images were stored in Mongo, now resolving!');
-                resolve(dataArr);
-            }
+            resolve(dataArr);
         })
     });
-    // .then((data) => {
-    //     console.log('This here is also reached!');
-    //     resolve(data);
-    // })
-    // .catch((err) => {
-    //     reject(err);
-    // });
 };
 
 module.exports = imageModel;
