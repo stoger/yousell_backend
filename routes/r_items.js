@@ -49,25 +49,12 @@ let getTimeNow = function () {
     return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 };
 
-
-cloudinary.config({
-    cloud_name: 'yousell',
-    api_key: '832867621413362',
-    api_secret: 'SMAGDEE8mlxq43bSs4CAlHDpkAA'
-});
-
-if (mongoose.connection.readyState !== 1) {
-    mongoose.connect('mongodb://localhost:27017/yousell', {
-        useMongoClient: true
-    });
-}
-
 // Trying to rewrite this into supporting promises, and spreading those across all models
 router.post('/', (req, res) => {
     // let RALF know about pagenum parameter!!!!!!
-    let amountToSkip = ((req.body.pagenum) * PRODUCTS_PER_PAGE) || PRODUCTS_PER_PAGE;
+    let amountToSkip = ((req.body.pagenum) * PRODUCTS_PER_PAGE) || 0;
 
-    findAllItemsAsProducts(amountToSkip)
+    findAllItemsAsProducts(amountToSkip, PRODUCTS_PER_PAGE)
         .then((itemQueryResult) => {
             return new Promise((resolve, reject) => {
                 findAllImagesForItems(itemQueryResult)
@@ -94,82 +81,103 @@ router.post('/', (req, res) => {
 });
 
 // Add a new product to the database
-router.post('/add', multer({ storage: storage }).array('images[]', FILE_LIMIT), (req, res, next) => {
+router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (req, res, next) => {
     if (!req.files) {
-        res.writeHead(500, { 'Content-Type': 'application-json' });
-        res.end(JSON.stringify({
-            'Error': 'File upload failed'
-        }));
-    } else {
-        if (req.body.price.includes(',')) {
-            req.body.price = req.body.price.replace(",", ".");
+        console.log('Inside of files');
+        if (req.body.images) {
+            console.log('inside another if');
+            req.files = req.body.images;
+            console.log(req.files);
+        } else {
+            console.log('Rejecting because of no images');
+            console.log(req.body.images);
+            res.writeHead(500, { 'Content-Type': 'application-json' });
+            res.end(JSON.stringify({
+                'Error': 'File upload failed'
+            }));
         }
-
-        let currentProduct = {
-            name: req.body.product,
-            desc: req.body.description,
-            price: req.body.price,
-            user: req.body.user,
-            category: req.body.category,
-            date: getTimeNow()
-        },
-            imagesStoredCDN = [];
-
-        saveProductToDb(currentProduct)
-            .then((data) => {
-                return new Promise((resolve, reject) => {
-                    for (let item of req.files) {
-                        SaveCDN(item.path, item.url)
-                            .then((storedImage) => {
-                                imagesStoredCDN.push(storedImage);
-
-                                return new Promise((resolve, reject) => {
-                                    if (imagesStoredCDN.length === req.files.length) {
-                                        resolve(imagesStoredCDN);
-                                    }
-                                });
-                            })
-                            .then((finishedWithImages) => {
-                                let testArr = [];
-
-                                for (let element of finishedWithImages) {
-                                    testArr.push(element.url);
-                                }
-
-                                saveImagesWithProduct(data._id, testArr)
-                                    .then((workedOut) => {
-                                        console.log('Images resolved you');
-                                        resolve(workedOut);
-                                    })
-                                    .catch((e) => {
-                                        console.log('Images rejected you');
-                                        reject(e);
-                                    });
-                            })
-                            .catch((loc_err) => {
-                                reject(loc_err);
-                            });
-                    }
-                });
-            })
-            .then((endResult) => {
-                let productStored = JSON.parse(currentProduct);
-                console.log(productStored);
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({
-                    saved: productStored
-                }));
-            })
-            .catch((e) => {
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({
-                    Error: 'Unfortunately, it seems that saving the product and images connected to it failed!',
-                    msg: e
-                }));
-            });
     }
+
+    console.log(req.files);
+
+    if (req.body.price.includes(',')) {
+        req.body.price = req.body.price.replace(",", ".");
+    }
+
+    let currentProduct = {
+        name: req.body.product,
+        desc: req.body.description,
+        price: req.body.price,
+        user: req.body.user,
+        category: req.body.category,
+        date: getTimeNow()
+    },
+        imagesStoredCDN = [];
+
+    saveProductToDb(currentProduct)
+        .then((data) => {
+            return new Promise((resolve, reject) => {
+                for (let item of req.files) {
+                    SaveCDN(item.path, item.url)
+                        .then((storedImage) => {
+                            storedItems = [];
+                            // imagesStoredCDN.push(storedImage);
+                            storedItems.push(storedImage);
+                            console.log('Image was stored');
+
+                            // if (imagesStoredCDN.length === req.files.length) {
+                            if (storedItems.length === req.files.length) {
+                                console.log('All images were stored');
+                                // return Promise.resolve(imagesStoredCDN);
+                                return Promise.resolve(storedImage);
+                            }
+                        }, (err) => {
+                            console.log('Error trying to store images...');
+                            return Promise.reject();
+                        })
+                        .then((finishedWithImages) => {
+                            console.log('Should have all uploaded images now!');
+                            console.log(finishedWithImages.length);
+                            let mappedUrls = finishedWithImages.map(x => {
+                                console.log(x);
+                                return x.url;
+                            });
+
+                            return saveImagesWithProduct(data._id, mappedUrls)
+                                .then((workedOut) => {
+                                    console.log('Seems like storing the finished product worked out');
+                                    return Promise.resolve(workedOut);
+                                })
+                                .catch((e) => {
+                                    console.log('Seems like storing the finished product did not work out');
+                                    return Promise.reject(e);
+                                });
+                        }, (loc_err) => {
+                            console.log('Error haooened in items.js route file, ~line 140-150');
+                            return Promise.reject(loc_err);
+                        });
+                }
+            });
+        }, (err) => {
+            console.log('Error happened when trying to save product..');
+        })
+        .then((endResult) => {
+            console.log('Entered the very last then, underneath is the final result!');
+            console.log(endResult);
+            let productStored = JSON.parse(currentProduct);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                saved: productStored
+            }));
+        }, (e) => {
+            console.log('Entered the very last catch, underneath the final error!');
+            console.log(e);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                Error: 'Unfortunately, it seems that saving the product and images connected to it failed!',
+                msg: e
+            }));
+        });
 });
-
-
 
 module.exports = router;

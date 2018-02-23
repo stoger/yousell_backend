@@ -1,19 +1,33 @@
 var passport = require('passport');
-var User = require('../models/m_user_pp');
+// var User = require('../models/m_user_pp');
 var flash = require('connect-flash');
 
 // replace with ldapaut later
 var LocalStrategy = require('passport-local').Strategy;
+var LDAPStrategy = require('passport-ldapauth').Strategy;
 
 passport.serializeUser(function (user, done) {
     done(null, user);
 });
 
 passport.deserializeUser(function (id, done) {
-    User.findById(id, function (err, user) {
-        done(err, user);
-    });
+    done(null, id);
 });
+
+// TRY THIS LATER, TOMORROW MOST LIKELY
+passport.use('ldap', new LDAPStrategy({
+    usernameField: 'username',
+    passwordField: 'password',
+    server: {
+        url: 'ldap://192.168.121.4:389',
+        // bindDN: 'CN=atool,OU=LDAP,OU=ADMIN,OU=BENUTZER,OU=SCHULE,DC=schule,DC=local',
+        bindDN: 'cn=atool,ou=LDAP,ou=Admin,ou=Benutzer,ou=SCHULE,dc=schule,dc=local',
+        // bindDN: 'cn=atool,dc=schule,dc=local',
+        bindCredentials: '12atool34',
+        searchBase: 'dc=schule,dc=local',
+        searchFilter: '(sAMAccountName={{username}})'
+    }
+}));
 
 passport.use('local.signin', new LocalStrategy({
     usernameField: 'username',

@@ -7,33 +7,40 @@ let express = require('express'),
 
 let csrfProtection = csrf();
 
-let jsonParser = bodyParser.json();
-let urlParser = bodyParser.urlencoded({ extended: true });
+let jsonParser = bodyParser.json(),
+    urlParser = bodyParser.urlencoded({ extended: true });
 
 let bodyParseArray = [jsonParser, urlParser];
 
+let countProducts = require('../models/m_product').countAllProducts;
+
 router.get('/', csrfProtection, (req, res) => {
-    console.log('Sending token!');
     let token = req.csrfToken();
     res.json({ _csrf: token });
 });
 
 router.get('/success', function (req, res) {
-    res.contentType('application/json').json({
-        success: true,
-    });
+    countProducts()
+        .then(count => {
+            res.contentType('application/json').json({
+                success: true,
+                amount: count / 12
+            });
+        }, err => {
+            res.redirect('/login/failure');
+        });
 });
 
-router.get('/failure', bodyParseArray, function (req, res) {
+router.get('/failure', bodyParseArray, (req, res) => {
     res.contentType('application/json').json({
         success: false,
     });
 });
 
-router.post('/', bodyParseArray, passport.authenticate('local.signin', {
+router.post('/', bodyParseArray, passport.authenticate('ldap', {
     successRedirect: '/login/success',
     failureRedirect: '/login/failure',
-    failureFlash: true
+    session: false
 }));
 
 module.exports = router;

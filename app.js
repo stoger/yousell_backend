@@ -21,7 +21,7 @@ let loginRoutes = require('./routes/r_login'),
     chattingRoutes = require('./routes/r_chat');
 
 let app = express();
-app.locals.allowedOrigins = ['http://localhost:3000', 'http://localhost:8080', 'http://172.20.10.4:3000'];
+app.locals.allowedOrigins = ['http://localhost:3000', 'http://localhost:8080', 'http://172.20.10.4:3000', 'http://172.17.111.118'];
 
 let issuesoption = {
     origin: true,
@@ -44,8 +44,8 @@ mongoose.connect(mongoURI, {
 require('./config/passport');
 
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));

@@ -10,17 +10,12 @@ let productSchema = new Schema({
     date: { type: String, required: true }
 });
 
-// if (mongoose.connection.readyState !== 1) {
-//     mongoose.connect("mongodb://192.168.1.17/yousell", () => {
-//         console.log('MongoDB should now be conneted');
-//     });
-// }
 let productModel = mongoose.model('Product', productSchema, 'products');
 
 // Searches the Database for elemts which will be mainly used for the site's main page
 // Takes the amount of elemts to skip as parameter
 // Returns a promise which will be handled @ spot of use itself
-let listElements_SortByDate = function (skipping) {
+let listElements_SortByDate = (skipping, displayLimit) => {
     return new Promise((resolve, reject) => {
         productModel.find({}, (err, prod_doc) => {
             if (err) {
@@ -35,14 +30,14 @@ let listElements_SortByDate = function (skipping) {
             }
 
             resolve(prod_doc);
-        }).sort({ date: -1 }).limit(skipping);
+        }).sort({ date: -1 }).skip(skipping).limit(displayLimit);
     });
 };
 
 // Saves a new Product to the database
 // Takes a JSON-Object including all parameters for the model
 // Returns Promise on finishing
-let saveNewProductOffer = function (model_params) {
+let saveNewProductOffer = (model_params) => {
     let productInsertion = new productModel({
         art_name: model_params.name,
         art_desc: model_params.desc,
@@ -52,37 +47,30 @@ let saveNewProductOffer = function (model_params) {
         date: model_params.date
     });
 
-    console.log(productInsertion);
-
     return new Promise((resolve, reject) => {
-        productInsertion.save((err, result) => {
-            return new Promise((resolve, reject) => {
-                if (err) {
-                    reject(err);
-                }
+        return productInsertion.save((err, result) => {
+            if (err) {
+                reject(err);
+            }
 
-                if (!result) {
-                    reject(new Error({
-                        'Error-Message': 'Seems like trying to save a document ended up in a failure!\nSee the object attached @ .Error-Object to find out which object crashed to find in your DB!',
-                        'Error-Object': result
-                    }));
-                }
+            if (!result) {
+                reject(new Error({
+                    'Error-Message': 'Seems like trying to save a document ended up in a failure!\nSee the object attached @ .Error-Object to find out which object crashed to find in your DB!',
+                    'Error-Object': result
+                }));
+            }
 
-                resolve(result);
-            });
-        })
-            .then((savePositive) => resolve(savePositive))
-            .catch((saveFailed) => reject(saveFailed));
+            console.log('Im here, tryna resolve u know?');
+            resolve(result);
+        });
     });
 };
 
-let searchProduct = function (queryString) {
-    console.log('queryString', queryString);
-    var art_name_query = { "art_name": { $regex: queryString, $options: "i" } }
-    var art_desc_query = { "art_desc": { $regex: queryString, $options: "i" } }
+let searchProduct = (queryString, skipping) => {
+    let art_name_query = { "art_name": { $regex: queryString, $options: "i" } },
+        art_desc_query = { "art_desc": { $regex: queryString, $options: "i" } };
 
     return new Promise((resolve, reject) => {
-        // { $or: [ { <expression1> }, { <expression2> }, ... , { <expressionN> } ] }
         return productModel.find({ $or: [art_name_query, art_desc_query] }, (err, prod_doc) => {
             if (err) {
                 reject(err);
@@ -96,6 +84,68 @@ let searchProduct = function (queryString) {
             }
 
             resolve(prod_doc);
+        }).skip(skipping);
+    });
+}
+
+let fetchByCategory = (category) => {
+    let cat_query = { 'category': { $regex: category, $options: 'i' } };
+
+    return new Promise((resolve, reject) => {
+        return productModel.find({ category: cat_query }, (err, doc) => {
+            if (doc.length === 0 || !doc || err) {
+                reject({ location: 'fetchByCategory', err: err, data: doc });
+            }
+
+            resolve(doc);
+        });
+    });
+};
+
+let fetchByCategoryAndQuery = (category, query) => {
+    let catQuery = { 'art_category': { $regex: category, $options: 'i' } },
+        art_name_query = { 'art_name': { $regex: query, $options: 'i' } },
+        art_desc_query = { 'art_desc': { $regex: query, $options: 'i' } };
+
+    return new Promise((resolve, reject) => {
+        return productModel.find().and(
+            [
+                catQuery, {
+                    $or: [
+                        art_desc_query, art_name_query
+                    ]
+                }
+            ]
+        ).exec((err, doc) => {
+            if (doc.length === 0 || !doc || err) {
+                reject({ location: 'fetchByCategoryAndQuery', err: err, document: doc });
+            }
+
+            resolve(doc);
+        });
+    });
+};
+
+let fetchByUser = (username) => {
+    return new Promise((resolve, reject) => {
+        return productModel.find({ art_creator: { $regex: username, $options: 'i' } }, (err, doc) => {
+            if (doc.length === 0 || !doc || err) {
+                reject({ location: 'fetchByUser', err: err, data: doc });
+            }
+
+            resolve(doc);
+        });
+    });
+};
+
+let countAllProducts = () => {
+    return new Promise((resolve, reject) => {
+        return productModel.count({}, (err, count) => {
+            if (err) {
+                reject({ location: 'countAllProducts', err: err });
+            }
+
+            resolve(count);
         });
     });
 }
@@ -104,3 +154,7 @@ module.exports = productModel;
 module.exports.searchProduct = searchProduct;
 module.exports.findProductsSortByDate = listElements_SortByDate;
 module.exports.saveProduct = saveNewProductOffer;
+module.exports.searchCategory = fetchByCategory;
+module.exports.seachUser = fetchByUser;
+module.exports.listByCatAndQuery = fetchByCategoryAndQuery;
+module.exports.countAllProducts = countAllProducts;

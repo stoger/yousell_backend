@@ -61,6 +61,7 @@ let findImagesForProduct = function (productQueryResult) {
                     objectIdNotMatching.push(doc);
                 }
 
+
                 ++counter;
 
                 if (counter === productQueryResult.length) {
@@ -106,44 +107,46 @@ let findImagesForProduct = function (productQueryResult) {
 // takes the product's idea as well as all images for this certain product as arugments
 // returns the finished images as promise
 let saveImageWithProduct = function (prodID, images) {
-    return new Promise((resolve, reject) => {
-        let counter = 0;
-        let dataArr = [];
+    let counter = 0;
+    let dataArr = [];
 
-        let storeImages = new imageModel({
-            product: prodID,
-            url: images
-        });
-
-        storeImages.save((err, result) => {
-            return new Promise((resolve, reject) => {
-                if (err) {
-                    reject(err);
-                }
-
-                if (!result) {
-                    reject({
-                        'Error-Message': 'Trying to store an image in the database resulted in an error, see more @ Error-Object',
-                        'Error-Object': result
-                    });
-                }
-
-                ++counter;
-                dataArr.push(result.url);
-
-                if (counter === images.length) {
-                    resolve(dataArr);
-                }
-            });
-        })
-            .then((data) => {
-                resolve(data);
-            })
-            .catch((err) => {
-                reject(err);
-            });
-
+    console.log('Images:\t', images);
+    let storeImages = new imageModel({
+        product: prodID,
+        url: images
     });
+
+    return new Promise((resolve, reject) => {
+        return storeImages.save((err, result) => {
+            if (err) {
+                console.log('Storing images resulted in error!');
+                reject(err);
+            }
+
+            if (!result) {
+                console.log('Storing images resulted in an empty response!');
+                reject({
+                    'Error-Message': 'Trying to store an image in the database resulted in an error, see more @ Error-Object',
+                    'Error-Object': result
+                });
+            }
+
+            ++counter;
+            dataArr.push(result.url);
+
+            if (counter === images.length) {
+                console.log('Images were stored in Mongo, now resolving!');
+                resolve(dataArr);
+            }
+        })
+    });
+    // .then((data) => {
+    //     console.log('This here is also reached!');
+    //     resolve(data);
+    // })
+    // .catch((err) => {
+    //     reject(err);
+    // });
 };
 
 module.exports = imageModel;
