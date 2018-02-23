@@ -25,7 +25,7 @@ router.get('/success', function (req, res) {
         .then(count => {
             res.contentType('application/json').json({
                 success: true,
-                amount: count / 12
+                amount: Math.ceil(count / 12)
             });
         }, err => {
             console.log('dis shiet redirects!');

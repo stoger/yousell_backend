@@ -10,7 +10,7 @@ let searchProduct = require('../models/m_product').searchProduct,
     listByCatAndQuery = require('../models/m_product').listByCatAndQuery;
 
 // Home page route.
-router.get('/', (req, res, next) => {
+router.post('/', (req, res, next) => {
     let catParamExists = typeof req.query.category,
         searchParamExists = typeof req.query.q;
 
