@@ -14,8 +14,8 @@ let bodyParseArray = [jsonParser, urlParser];
 
 let countProducts = require('../models/m_product').countAllProducts;
 
-router.get('/', csrfProtection, (req, res) => {
-    let token = req.csrfToken();
+router.get('/', csrfProtection, (req, res) => {    
+        let token = req.csrfToken();
     res.json({ _csrf: token });
 });
 
@@ -37,7 +37,7 @@ router.get('/failure', bodyParseArray, (req, res) => {
     });
 });
 
-router.post('/', bodyParseArray, passport.authenticate('local.signin', {
+router.post('/', bodyParseArray, passport.authenticate('ldap', {
     successRedirect: '/login/success',
     failureRedirect: '/login/failure',
     session: false
