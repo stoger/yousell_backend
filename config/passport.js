@@ -34,38 +34,38 @@ passport.use('local.signin', new LocalStrategy({
     passwordField: 'password',
     passReqToCallback: true
 }, function (req, username, password, done) {
-    req.checkBody('username').trim().notEmpty();//.isEmail();
-    req.checkBody('password').trim().notEmpty();
-    let errors = req.validationErrors();
+    // req.checkBody('username').trim().notEmpty();//.isEmail();
+    // req.checkBody('password').trim().notEmpty();
+    // let errors = req.validationErrors();
 
-    if (errors) {
-        let messages = [];
-        errors.forEach(function (error) {
-            console.log(error);
-            messages.push(error.msg);
-        });
+    // if (errors) {
+    //     let messages = [];
+    //     errors.forEach(function (error) {
+    //         console.log(error);
+    //         messages.push(error.msg);
+    //     });
 
-        return done(null, false, req.flash('error', messages));
-    }
+    //     return done(null, false, req.flash('error', messages));
+    // }
 
-    // TODO: Change for LDAP
-    // TODO: Specify speaking error messages for RALF
-    User.find({ "username": username }, function (err, user) {
-        if (err) {
-            console.log(`Unable to find One: ${err}`);
-            return done(err);
-        }
+    // // TODO: Change for LDAP
+    // // TODO: Specify speaking error messages for RALF
+    // User.find({ "username": username }, function (err, user) {
+    //     if (err) {
+    //         console.log(`Unable to find One: ${err}`);
+    //         return done(err);
+    //     }
 
-        if (!user) {
-            console.log(`Unable to find User`);
-            return done(null, false, { message: 'No user was found.' });
-        }
+    //     if (!user) {
+    //         console.log(`Unable to find User`);
+    //         return done(null, false, { message: 'No user was found.' });
+    //     }
 
-        // CHECK THIS ONCE MORE, DOESN'T WORK
-        if (!User.validatePassword(password)) {
-            console.log('Passwords dont match');
-            return done(null, false, { message: 'Wrong password.' });
-        }
+    //     // CHECK THIS ONCE MORE, DOESN'T WORK
+    //     if (!User.validatePassword(password)) {
+    //         console.log('Passwords dont match');
+    //         return done(null, false, { message: 'Wrong password.' });
+    //     }
 
         return done(null, user);
     });

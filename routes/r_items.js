@@ -123,13 +123,13 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
                             storedItems = [];
                             // imagesStoredCDN.push(storedImage);
                             storedItems.push(storedImage);
-                            console.log('Image was stored');
+                            // console.log('Image was stored');
 
                             // if (imagesStoredCDN.length === req.files.length) {
                             if (storedItems.length === req.files.length) {
-                                console.log('All images were stored');
+                                // console.log('All images were stored');
                                 // return Promise.resolve(imagesStoredCDN);
-                                return Promise.resolve(storedImage);
+                                return Promise.resolve(storedItems);
                             }
                         }, (err) => {
                             console.log('Error trying to store images...');
@@ -137,7 +137,7 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
                         })
                         .then((finishedWithImages) => {
                             console.log('Should have all uploaded images now!');
-                            console.log(finishedWithImages.length);
+                            console.log(finishedWithImages);
                             let mappedUrls = finishedWithImages.map(x => {
                                 console.log(x);
                                 return x.url;

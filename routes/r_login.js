@@ -37,7 +37,7 @@ router.get('/failure', bodyParseArray, (req, res) => {
     });
 });
 
-router.post('/', bodyParseArray, passport.authenticate('ldap', {
+router.post('/', bodyParseArray, passport.authenticate('local.signin', {
     successRedirect: '/login/success',
     failureRedirect: '/login/failure',
     session: false
