@@ -34,6 +34,22 @@ let listElements_SortByDate = (skipping, displayLimit) => {
     });
 };
 
+let listElementsByDate = () => {
+    return new Promise((resolve, reject) => {
+        return productModel.find({}, (err, doc) => {
+            if (err) {
+                reject(err);
+            }
+
+            if (!doc) {
+                reject(doc);
+            }
+
+            resolve(doc);
+        }).sort({ date: -1 });
+    });
+};
+
 // Saves a new Product to the database
 // Takes a JSON-Object including all parameters for the model
 // Returns Promise on finishing
@@ -151,7 +167,8 @@ let countAllProducts = () => {
 
 module.exports = productModel;
 module.exports.searchProduct = searchProduct;
-module.exports.findProductsSortByDate = listElements_SortByDate;
+// module.exports.findProductsSortByDate = listElements_SortByDate;
+module.exports.findProductsSortByDate = listElementsByDate;
 module.exports.saveProduct = saveNewProductOffer;
 module.exports.searchCategory = fetchByCategory;
 module.exports.seachUser = fetchByUser;

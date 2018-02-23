@@ -54,8 +54,11 @@ router.post('/', (req, res) => {
     // let RALF know about pagenum parameter!!!!!!
     let amountToSkip = ((req.body.pagenum) * PRODUCTS_PER_PAGE) || 0;
 
-    findAllItemsAsProducts(amountToSkip, PRODUCTS_PER_PAGE)
+    // findAllItemsAsProducts(amountToSkip, PRODUCTS_PER_PAGE)
+    findAllItemsAsProducts()
         .then((itemQueryResult) => {
+            console.log(itemQueryResult.length);
+            console.log(itemQueryResult);
             return new Promise((resolve, reject) => {
                 findAllImagesForItems(itemQueryResult)
                     .then((itemsWithImages) => resolve(itemsWithImages))
