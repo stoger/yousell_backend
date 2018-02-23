@@ -13,22 +13,22 @@ let saveImageToCDN = function (iPath) {
     return new Promise((resolve, reject) => {
         return cloudinary.uploader.upload(iPath, (err, cdnResult) => {
             if (err) {
-                console.log('Should be rejecting!');
+                // console.log('Should be rejecting!');
                 reject(err);
             }
 
             if (!cdnResult) {
-                console.log('Should be rejecting!');
+                // console.log('Should be rejecting!');
                 reject(new Error({
                     'Error-Message': 'Cloudinary result seems to be empty, check out the error message @ Error-Object',
                     'Error-Object': result
                 }));
             }
 
-            console.log('Should be resolving');
+            // console.log('Should be resolving');
             resolve(cdnResult);
         })
-        console.log('didnt resolve....');
+        // console.log('didnt resolve....');
     });
 
 };

@@ -60,7 +60,6 @@ let saveNewProductOffer = (model_params) => {
                 }));
             }
 
-            console.log('Im here, tryna resolve u know?');
             resolve(result);
         });
     });

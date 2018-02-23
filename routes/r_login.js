@@ -14,12 +14,13 @@ let bodyParseArray = [jsonParser, urlParser];
 
 let countProducts = require('../models/m_product').countAllProducts;
 
-router.get('/', csrfProtection, (req, res) => {    
-        let token = req.csrfToken();
+router.get('/', csrfProtection, (req, res) => {
+    let token = req.csrfToken();
     res.json({ _csrf: token });
 });
 
 router.get('/success', function (req, res) {
+    console.log('Seems like a success');
     countProducts()
         .then(count => {
             res.contentType('application/json').json({
@@ -27,6 +28,7 @@ router.get('/success', function (req, res) {
                 amount: count / 12
             });
         }, err => {
+            console.log('dis shiet redirects!');
             res.redirect('/login/failure');
         });
 });
@@ -37,7 +39,7 @@ router.get('/failure', bodyParseArray, (req, res) => {
     });
 });
 
-router.post('/', bodyParseArray, passport.authenticate('ldap', {
+router.post('/', bodyParseArray, passport.authenticate('local.signin', {
     successRedirect: '/login/success',
     failureRedirect: '/login/failure',
     session: false

@@ -15,19 +15,19 @@ passport.deserializeUser(function (id, done) {
 });
 
 // TRY THIS LATER, TOMORROW MOST LIKELY
-passport.use('ldap', new LDAPStrategy({
-    usernameField: 'username',
-    passwordField: 'password',
-    server: {
-        url: 'ldap://192.168.121.4:389',
-        // bindDN: 'CN=atool,OU=LDAP,OU=ADMIN,OU=BENUTZER,OU=SCHULE,DC=schule,DC=local',
-        bindDN: 'cn=atool,ou=LDAP,ou=Admin,ou=Benutzer,ou=SCHULE,dc=schule,dc=local',
-        // bindDN: 'cn=atool,dc=schule,dc=local',
-        bindCredentials: '12atool34',
-        searchBase: 'dc=schule,dc=local',
-        searchFilter: '(sAMAccountName={{username}})'
-    }
-}));
+// passport.use('ldap', new LDAPStrategy({
+//     usernameField: 'username',
+//     passwordField: 'password',
+//     server: {
+//         url: 'ldap://192.168.121.4:389',
+//         // bindDN: 'CN=atool,OU=LDAP,OU=ADMIN,OU=BENUTZER,OU=SCHULE,DC=schule,DC=local',
+//         bindDN: 'cn=atool,ou=LDAP,ou=Admin,ou=Benutzer,ou=SCHULE,dc=schule,dc=local',
+//         // bindDN: 'cn=atool,dc=schule,dc=local',
+//         bindCredentials: '12atool34',
+//         searchBase: 'dc=schule,dc=local',
+//         searchFilter: '(sAMAccountName={{username}})'
+//     }
+// }));
 
 passport.use('local.signin', new LocalStrategy({
     usernameField: 'username',
@@ -66,7 +66,7 @@ passport.use('local.signin', new LocalStrategy({
     //         console.log('Passwords dont match');
     //         return done(null, false, { message: 'Wrong password.' });
     //     }
-
-    return done(null, user);
+    console.log('In here, should work!');
+    return done(null, username);
     // });
 }));

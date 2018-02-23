@@ -83,14 +83,14 @@ router.post('/', (req, res) => {
 // Add a new product to the database
 router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (req, res, next) => {
     if (!req.files) {
-        console.log('Inside of files');
+        // console.log('Inside of files');
         if (req.body.images) {
-            console.log('inside another if');
+            // console.log('inside another if');
             req.files = req.body.images;
-            console.log(req.files);
+            // console.log(req.files);
         } else {
-            console.log('Rejecting because of no images');
-            console.log(req.body.images);
+            // console.log('Rejecting because of no images');
+            // console.log(req.body.images);
             res.writeHead(500, { 'Content-Type': 'application-json' });
             res.end(JSON.stringify({
                 'Error': 'File upload failed'
@@ -98,7 +98,7 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
         }
     }
 
-    console.log(req.files);
+    // console.log(req.files);
 
     if (req.body.price.includes(',')) {
         req.body.price = req.body.price.replace(",", ".");
@@ -127,6 +127,8 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
 
                             // if (imagesStoredCDN.length === req.files.length) {
                             if (storedItems.length === req.files.length) {
+                                console.log('Stored length: ', storedItems.length);
+                                console.log('File length: ', req.files.length);
                                 // console.log('All images were stored');
                                 // return Promise.resolve(imagesStoredCDN);
                                 return Promise.resolve(storedItems);
@@ -136,10 +138,10 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
                             return Promise.reject();
                         })
                         .then((finishedWithImages) => {
-                            console.log('Should have all uploaded images now!');
+                            console.log('Entered second .then() block');
                             console.log(finishedWithImages);
                             let mappedUrls = finishedWithImages.map(x => {
-                                console.log(x);
+                                console.log('Mapping, cur Value: ', x);
                                 return x.url;
                             });
 
