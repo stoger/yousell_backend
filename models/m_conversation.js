@@ -59,7 +59,7 @@ let checkConversationsByUser = (name) => {
 
             if (doc.length === 0 || !doc) {
                 console.log('Recting inside second if');
-                reject(new Error({ msg: "Either length is 0 or no document given as result!" }), err: err, doc: doc);
+                reject({ msg: "Either length is 0 or no document given as result!", err: err, doc: doc });
             }
 
             console.log('Gonna resolve, eventually');
