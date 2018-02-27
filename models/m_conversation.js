@@ -17,17 +17,13 @@ let checkForConversation = (partners) => {
         conversationModel.find({
             partners: { $all: partners },
         }, (err, doc) => {
-            // console.log('Checking conversation results: ');
-            // console.log(err, '\t', doc);
             if (err || !doc) {
                 reject({ 'location': 'checkConversation', 'reason': 'error', 'err': err, 'data': doc });
             }
 
             if (doc.length === 0) {
-                // console.log('Definitely not resolving');
                 reject({ 'location': 'checkConversation', 'reason': 'empty doc' });
             }
-
 
             resolve(doc);
         })
@@ -51,6 +47,27 @@ let findConversationById = function (id) {
     });
 };
 
+let checkConversationsByUser = (name) => {
+    return new Promise((resolve, reject) => {
+        conversationModel.find({ partners: { $in: [name] } }, (err, doc) => {
+            console.log(err);
+            console.log(doc);
+            if (err) {
+                console.log('Rejecting inside of if');
+                reject(err);
+            }
+
+            if (doc.length === 0 || !doc) {
+                console.log('Recting inside second if');
+                reject(new Error({ msg: "Either length is 0 or no document given as result!" }), err: err, doc: doc);
+            }
+
+            console.log('Gonna resolve, eventually');
+            resolve(doc);
+        })
+    });
+}
+
 let storeNewConversation = (convPartners) => {
     return new Promise((resolve, reject) => {
         let curConv = new conversationModel({
@@ -58,15 +75,14 @@ let storeNewConversation = (convPartners) => {
             newestMessage: getTimeNow()
         });
 
+        console.log('Partners: ', convPartners);
 
         curConv.save((err, doc) => {
             if (err || !doc) {
-                // console.log('failing because of err || !doc');
                 reject({ 'location': 'storeNewConversation', 'reason': 'error', 'err': err, 'data': doc });
             }
 
             if (doc.length === 0) {
-                // console.log('failing because of doc.length === 0');
                 reject({ 'location': 'storeNewConversation', 'reason': 'empty doc' });
             }
 
@@ -83,15 +99,6 @@ let updateLastMessageTime = function (id) {
             }
 
             resolve({ msg: 'seems like its working', doc: doc });
-            // doc.newestMessage = getTimeNow();
-
-            // doc.save((err, result) => {
-            //     if (result.length === 0 || !result || err) {
-            //         reject({ location: 'saveMessageStamp', data: { error: err, document: result } });
-            //     }
-
-            //     resolve(result);
-            // })
         });
     });
 };
@@ -100,3 +107,4 @@ module.exports.searchConversationsFunc = checkForConversation;
 module.exports.storeConversationFunc = storeNewConversation;
 module.exports.updateTimestamp = updateLastMessageTime;
 module.exports.searchConvById = findConversationById;
+module.exports.findAllByUser = checkConversationsByUser;

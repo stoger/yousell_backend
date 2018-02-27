@@ -4,6 +4,7 @@ let express = require('express'),
 
 let findConversation = require('../models/m_conversation').searchConvById,
     fetchMessageHistory = require('../models/m_messages').fetchMessageHistory;
+fetchConversationsByUser = require('../models/m_conversation').findAllByUser;
 
 router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../test/io1.html'));
@@ -20,7 +21,7 @@ router.get('/show/:id', (req, res) => {
             return new Promise((resolve, reject) => {
                 fetchMessageHistory(result._id)
                     .then((result) => resolve(result),
-                    (err) => reject(err));
+                        (err) => reject(err));
             });
         }, (err) => {
             console.log('Error happened...');
@@ -39,8 +40,21 @@ router.get('/show/:id', (req, res) => {
         });
 });
 
-router.post('/chat', (req, res) => {
+router.post('/all', (req, res) => {
+    if (!req.body.user) {
+        res.status(500).send({ msg: "No username given!" }).end();
+    }
 
+    fetchConversationsByUser(req.body.user)
+        .then((result) => {
+            console.log('Looks good, found the conversations, seemingly!');
+            console.log(result);
+            res.status(200).send(result).end();
+        }, (err) => {
+            console.log('Some sort of error happened, better check that!');
+            console.log(err);
+            res.status(500).send(err).end();
+        });
 });
 
 module.exports = router;

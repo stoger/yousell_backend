@@ -7,7 +7,8 @@ let express = require('express'),
     multer = require('multer'),
     autoreap = require('multer-autoreap'),
     crypto = require('crypto'),
-    ObjectId = mongoose.Types.ObjectId;
+    ObjectId = mongoose.Types.ObjectId,
+    multiparty = require('multiparty');
 
 // Autoreap automatically deletes files which were temporarily stored by multer (in multer's destination)
 autoreap.options = {
@@ -51,14 +52,8 @@ let getTimeNow = function () {
 
 // Trying to rewrite this into supporting promises, and spreading those across all models
 router.post('/', (req, res) => {
-    // let RALF know about pagenum parameter!!!!!!
-    let amountToSkip = ((req.body.pagenum) * PRODUCTS_PER_PAGE) || 0;
-
-    // findAllItemsAsProducts(amountToSkip, PRODUCTS_PER_PAGE)
     findAllItemsAsProducts()
         .then((itemQueryResult) => {
-            console.log(itemQueryResult.length);
-            console.log(itemQueryResult);
             return new Promise((resolve, reject) => {
                 findAllImagesForItems(itemQueryResult)
                     .then((itemsWithImages) => resolve(itemsWithImages))
@@ -86,22 +81,16 @@ router.post('/', (req, res) => {
 // Add a new product to the database
 router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (req, res, next) => {
     if (!req.files) {
-        // console.log('Inside of files');
         if (req.body.images) {
-            // console.log('inside another if');
             req.files = req.body.images;
-            // console.log(req.files);
         } else {
-            // console.log('Rejecting because of no images');
-            // console.log(req.body.images);
             res.writeHead(500, { 'Content-Type': 'application-json' });
             res.end(JSON.stringify({
-                'Error': 'File upload failed'
+                'Error': 'File upload failed',
+                success: false
             }));
         }
     }
-
-    // console.log(req.files);
 
     if (req.body.price.includes(',')) {
         req.body.price = req.body.price.replace(",", ".");
@@ -109,7 +98,7 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
 
     let currentProduct = {
         name: req.body.product,
-        desc: req.body.description,
+        desc: req.body.desc,
         price: req.body.price,
         user: req.body.user,
         category: req.body.category,
@@ -170,9 +159,6 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
                             return x.url;
                         });
 
-
-                        console.log('Mapped values: ', mappedUrls);
-
                         return saveImagesWithProduct(data._id, mappedUrls)
                             .then((workedOut) => {
                                 console.log('Seems like storing the finished product worked out');
@@ -194,13 +180,14 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
             // res.sendStatus(200).send(JSON.stringify({ saved: endResult })).end();
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
-                saved: endResult
+                success: true
             }));
         }, (e) => {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 Error: 'Unfortunately, it seems that saving the product and images connected to it failed!',
-                msg: e
+                msg: e,
+                success: false
             }));
         });
 });

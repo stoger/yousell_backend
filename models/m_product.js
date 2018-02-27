@@ -81,7 +81,7 @@ let saveNewProductOffer = (model_params) => {
     });
 };
 
-let searchProduct = (queryString, skipping) => {
+let searchProduct = (queryString) => {
     let art_name_query = { "art_name": { $regex: queryString, $options: "i" } },
         art_desc_query = { "art_desc": { $regex: queryString, $options: "i" } };
 
@@ -99,7 +99,7 @@ let searchProduct = (queryString, skipping) => {
             }
 
             resolve(prod_doc);
-        }).skip(skipping);
+        }).sort({ date: -1 });
     });
 }
 
@@ -131,7 +131,7 @@ let fetchByCategoryAndQuery = (category, query) => {
                     ]
                 }
             ]
-        ).exec((err, doc) => {
+        ).sort({ date: -1 }).exec((err, doc) => {
             if (doc.length === 0 || !doc || err) {
                 reject({ location: 'fetchByCategoryAndQuery', err: err, document: doc });
             }
@@ -171,6 +171,6 @@ module.exports.searchProduct = searchProduct;
 module.exports.findProductsSortByDate = listElementsByDate;
 module.exports.saveProduct = saveNewProductOffer;
 module.exports.searchCategory = fetchByCategory;
-module.exports.seachUser = fetchByUser;
+module.exports.searchUser = fetchByUser;
 module.exports.listByCatAndQuery = fetchByCategoryAndQuery;
 module.exports.countAllProducts = countAllProducts;
