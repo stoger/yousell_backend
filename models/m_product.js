@@ -101,6 +101,10 @@ let searchProduct = (queryString) => {
             resolve(prod_doc);
         }).sort({ date: -1 });
     });
+
+    let name_query = { "art_name": { $regex: inputString, $options: "i" } },
+        description_query = { "art_desc": { $regex: inputString, $options: "i" } };
+    return productModel.find({ $or: [name_query, description_query] });
 }
 
 let fetchByCategory = (category) => {
@@ -143,7 +147,7 @@ let fetchByCategoryAndQuery = (category, query) => {
 
 let fetchByUser = (username) => {
     return new Promise((resolve, reject) => {
-        return productModel.find({ art_creator: { $regex: username, $options: 'i' } }, (err, doc) => {
+        return productModel.find({ art_creator: { $regex: username, $options: 'i' } },  (err, doc) => {
             if (doc.length === 0 || !doc || err) {
                 reject({ location: 'fetchByUser', err: err, data: doc });
             }

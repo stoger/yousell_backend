@@ -177,7 +177,6 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
             reject(err);
         })
         .then((endResult) => {
-            // res.sendStatus(200).send(JSON.stringify({ saved: endResult })).end();
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 success: true

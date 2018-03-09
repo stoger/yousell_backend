@@ -20,7 +20,6 @@ router.get('/', csrfProtection, (req, res) => {
 });
 
 router.get('/success', function (req, res) {
-    console.log('Seems like a success');
     countProducts()
         .then(count => {
             res.contentType('application/json').json({

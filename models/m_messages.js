@@ -35,13 +35,15 @@ let storeNewMessage = (id, msg, receivingPartner) => {
     })
 };
 
-let fetchConversationHistory = function (id) {
+let fetchConversationHistory = (id) => {
     return new Promise((resolve, reject) => {
-        messageModel.find({ 'conversation': new ObjectId(id) }, (err, doc) => {
-            if (err || !doc)
+        return messageModel.find({ 'conversation': new ObjectId(id) }, (err, doc) => {
+            if (err || !doc) {
                 reject({ 'location': 'chatHistory', 'reason': 'err or no document', 'err': err, 'doc': doc });
-            else if (doc.length === 0)
+            }
+            else if (doc.length === 0) {
                 reject({ 'location': 'chatHistory', 'reason': 'doc.length is 0', document: doc });
+            }
 
             resolve(doc);
         }).sort({ 'createdAt': -1 }).limit(25);

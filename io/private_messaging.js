@@ -15,20 +15,25 @@ module.exports = (io) => {
     io.on('connection', (socket) => {
         // New client connects to the server, will be registered and stored in the activeUsers Object
         socket.on('ack user', (user) => {
-            if (!activeUsers[user.name]) {
-                // console.log('User ', user.name, ' was added to the object of active Users!');
-                console.log(user.name, ' just went online!');
-                activeUsers[user.name] = socket;
+            if (user.name !== '') {
+                if (!activeUsers[user.name]) {
+                    // console.log('User ', user.name, ' was added to the object of active Users!');
+                    console.log(user.name, ' just went online!');
+                    activeUsers[user.name] = socket;
 
-                if (unhandledMessages[user.name]) {
-                    // console.log('User that has a pending message came on!');
-                    let pendingMsg = unhandledMessages[user.name];
-                    activeUsers[user.name].emit('msg', { from: pendingMsg.from, data: pendingMsg.data });
+                    if (unhandledMessages[user.name]) {
+                        // console.log('User that has a pending message came on!');
+                        let pendingMsg = unhandledMessages[user.name];
+                        activeUsers[user.name].emit('msg', { from: pendingMsg.from, data: pendingMsg.data });
+                    }
                 }
+            } else {
+                console.log('Doesnt look like you wanna join, Mr. ', user.name);
             }
         });
 
         socket.on('private msg', (msg) => {
+            console.log('Msg received: ', msg);
             let partners = Array(msg.from, msg.to);
 
             // Check if these two conversation partners in particular already have a history together
@@ -54,26 +59,14 @@ module.exports = (io) => {
                     })
                 })
                 .then((info) => {
-                    // console.log('Alright, we reached the point of no return. The conversation exists, proof:\n', info);
-                    // No matter what happened before, i can assure that the conversation was created and exists in here
-                    // console.log(info._id);
-                    // console.log(msg.msg);
                     storeMessage(info._id, msg.msg, msg.to)
                         .then((storeSuccess) => {
-                            // console.log('Finally, the message should be stored by now also! GREAT DUDE! YOU MADE IT!');
-
-                            // console.log(activeUsers[msg.to]);
                             updateNewestMessageTimestamp(info._id)
                                 .then((resultObj) => {
-                                    // console.log('WE MADE IT, 1st try dude!');
-                                    // console.log(resultObj);
-
                                     if (activeUsers[msg.to]) {
                                         activeUsers[msg.to].emit('msg', { from: msg.from, data: msg.msg });
                                     } else {
-                                        // console.log('Added to the unhandled messages array');
                                         unhandledMessages[msg.to] = { from: msg.from, data: msg.msg };
-                                        // console.log(unhandledMessages);
                                     }
                                 })
                                 .catch((e) => {

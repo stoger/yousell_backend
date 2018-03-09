@@ -35,6 +35,7 @@ mongoose.connect(mongoURI, {
 }, (err, result) => {
     if (err) {
         console.log('Error trying to establish DBConnection');
+        process.exit(1);
     }
 
     console.log('Connected to MongoDB successfully!');

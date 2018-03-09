@@ -50,19 +50,14 @@ let findConversationById = function (id) {
 let checkConversationsByUser = (name) => {
     return new Promise((resolve, reject) => {
         conversationModel.find({ partners: { $in: [name] } }, (err, doc) => {
-            console.log(err);
-            console.log(doc);
             if (err) {
-                console.log('Rejecting inside of if');
                 reject(err);
             }
 
             if (doc.length === 0 || !doc) {
-                console.log('Recting inside second if');
                 reject({ msg: "Either length is 0 or no document given as result!", err: err, doc: doc });
             }
 
-            console.log('Gonna resolve, eventually');
             resolve(doc);
         })
     });
@@ -74,8 +69,6 @@ let storeNewConversation = (convPartners) => {
             partners: convPartners,
             newestMessage: getTimeNow()
         });
-
-        console.log('Partners: ', convPartners);
 
         curConv.save((err, doc) => {
             if (err || !doc) {

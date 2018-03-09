@@ -14,20 +14,13 @@ let findImagesForProduct = require('../models/m_images').findImagesForProduct;
 // Home page route.
 // Catch all search requests, check if both category and parameter was given first
 router.post('/', (req, res, next) => {
-    console.log('Im in here, so it should work, i guess');
+    d
     let catParamExists = typeof req.body.category,
         searchParamExists = typeof req.body.q;
 
-    console.log(req.body.category);
-    console.log(req.body.q);
-
-    console.log(req.body.category !== '' && req.body.q !== '');
     req.body.category !== '' && req.body.q !== ''
         ? listByCatAndQuery(req.body.category, req.body.q)
             .then((categoryQueryResult) => {
-                console.log('Looks like it worked!');
-                // console.log(categoryQueryResult);
-
                 findImagesForProduct(categoryQueryResult)
                     .then((finalResult) => {
                         console.log(finalResult.length);
@@ -48,8 +41,6 @@ router.post('/', (req, res, next) => {
 
 // Handle search just by category
 router.post('/', (req, res, next) => {
-    console.log('in the next one');
-    console.log("Category: ", req.body.category);
     if (req.body.category !== '') {
         listByCategory(req.body.category)
             .then((result) => {
@@ -69,7 +60,6 @@ router.post('/', (req, res, next) => {
 router.post('/', (req, res) => {
     console.log("Query: ", req.body.q);
     if (req.body.q !== '') {
-        console.log('Performing simple search query');
         searchProduct(req.body.q).then((result) => {
             findImagesForProduct(result)
                 .then((finalResult) => {
@@ -90,9 +80,7 @@ router.post('/', (req, res) => {
 
 // Handle search just by user
 router.post('/user', (req, res) => {
-    console.log('and in the last one');
-    if (req.body.user !== '') {
-        console.log('fetching products by user');
+    if (req.body.user !== '' && typeof req.body.user !== 'undefined') {
         listByUser(req.body.user)
             .then((queryResult) => {
                 findImagesForProduct(queryResult)
