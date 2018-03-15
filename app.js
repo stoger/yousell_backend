@@ -10,8 +10,8 @@ let express = require('express'),
     validator = require('express-validator'),
     helmet = require('helmet'),
     csrf = require('csurf'),
-    cors = require('cors');
-
+    cors = require('cors'),
+    jwt = require('jsonwebtoken');
 
 let loginRoutes = require('./routes/r_login'),
     listingRoutes = require('./routes/r_items'),
@@ -44,36 +44,48 @@ mongoose.connect(mongoURI, {
 // Load the configuration for passport which is located in config/passport.js
 require('./config/passport');
 
-// view engine setup
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'jade');
-
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+// Main project configuration for the server itself
+app.use(helmet.xssFilter());
+app.use(helmet.noCache());
+app.use(helmet.noSniff());
+app.use(helmet.frameguard());
+app.use(helmet.hidePoweredBy({
+    setTo: 'PHP 4.15.2'
+}));
 app.use(logger('dev'));
-app.use(helmet({
-    noCache: true,
-    hidePoweredBy: { setTo: 'HapiJS' },
-    noSniff: true,
-    xssFilter: true
-})); // Disable this if it doesn't work anymore
 app.use(cors(issuesoption));
-app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
-app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({
+    extended: true,
+    limit: '50mb'
+}));
+app.use(bodyParser.json({
+    limit: '50mb'
+}));
 app.use(validator());
 app.use(cookieParser());
-app.use(session({ secret: 'mysupersecret', resave: false, saveUninitialized: true }));
+app.use(session({
+    secret: 'yousellbackendsecret',
+    resave: false,
+    saveUninitialized: true
+}));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Set secret which is solely used for JWT
+app.set('secret', '2e418b5751e5d91f3b3b32ab5851222a');
+
+// app.get('/documentation/all', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'apidoc/index.html'));
+// });
 
 app.all('*', (req, res, next) => {
     let reqOrigin = req.headers.origin;
 
     if (app.locals.allowedOrigins.indexOf(reqOrigin) !== -1) {
         res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+        res.setHeader('Access-Control-Allow-Methods', ['GET', 'POST']);
     }
 
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -81,6 +93,36 @@ app.all('*', (req, res, next) => {
 });
 
 app.use('/login', loginRoutes);
+
+// Important app.use for suppporting JWT throughout all routes except for the login route.
+// Initial token created when successfully logging in
+
+// app.use((req, res, next) => {
+//     let token = req.body.token || req.query.token || req.headers['x-access-token'] || req.get('x-access-token');
+//     if (token) {
+//         jwt.verify(token, app.get('secret'), (err, decoded) => {
+//             if (err) {
+//                 res.contentType('application/json').status(403).send(
+//                     JSON.stringify({
+//                         message: 'Error when trying to verify JWT',
+//                         error: err
+//                     })
+//                 ).end();
+//             } else {
+//                 req.decoded = decoded;
+//                 console.log('Heading towards next route!');
+//                 next();
+//             }
+//         });
+//     } else {
+//         res.contentType('application/json').status(403).send(
+//             JSON.stringify({
+//                 message: 'No token provided',
+//             })
+//         ).end();
+//     }
+// });
+
 app.use('/main', listingRoutes);
 app.use('/message', messagingRoutes);
 app.use('/rate', ratingRoutes);
@@ -110,5 +152,7 @@ app.use(function (err, req, res, next) {
     res.end(JSON.stringify(err));
 });
 
-app.use(csrf({ cookie: true }));
+app.use(csrf({
+    cookie: true
+}));
 module.exports = app;

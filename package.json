@@ -7,6 +7,7 @@
     "debug": "nodemon --inspect ./bin/www"
   },
   "dependencies": {
+    "apidoc": "^0.17.6",
     "bluebird": "^3.5.1",
     "body-parser": "~1.18.2",
     "busboy": "^0.2.14",
@@ -19,9 +20,10 @@
     "express": "~4.15.5",
     "express-session": "^1.15.6",
     "express-validator": "^4.3.0",
-    "helmet": "^3.9.0",
+    "helmet": "^3.12.0",
     "jade": "~1.11.0",
     "jimp": "^0.2.28",
+    "jsonwebtoken": "^8.2.0",
     "mathjs": "^3.19.0",
     "mongoose": "^4.13.4",
     "morgan": "~1.9.0",

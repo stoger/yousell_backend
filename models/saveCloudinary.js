@@ -13,15 +13,12 @@ let saveArrayToCDN = function (array) {
     let itemCount = 0,
         successfulUploaded = [];
 
-    console.log('Length were trying to store here is: ', array.length);
-
     return new Promise((resolve, reject) => {
         for (currentItem of array) {
             let iPath = currentItem.path;
 
             cloudinary.uploader.upload(iPath, (err, cdnResult) => {
                 itemCount++;
-                console.log('# stored: ', itemCount);
                 if (err) {
                     reject(err);
                 }

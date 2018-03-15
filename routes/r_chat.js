@@ -1,19 +1,66 @@
 let express = require('express'),
     router = express(),
     path = require('path'),
-    jsonArraySort = require('sort-json-array'),
-    _ = require('underscore');
+    jsonArraySort = require('sort-json-array');
 
-let findConversation = require('../models/m_conversation').searchConvById,
-    fetchConversationsByUser = require('../models/m_conversation').findAllByUser,
+let fetchConversationsByUser = require('../models/m_conversation').findAllByUser,
     fetchMessageHistory = require('../models/m_messages').fetchMessageHistory;
 
+/**
+ * @api {post} /all Abfrage der Konversationen/Chats eines Benutzers
+ * @apiName Send all chats for user
+ * @apiGroup Chat
+ * 
+ * @apiSuccess conv {Array} Enthält alle Konversationspartner
+ * @apiSuccess history {Array} Befüllt mit allen Nachrichten, welche in den Konversationen ausgetauscht wurde, Konversations-ID als Schlüssel in diesem Array.
+ * 
+ * @apiParamExample {json} Request payload example
+ * { 
+ *  "conv": [{
+ *      "_id": "5a99287078d5490270994492",
+ *      "partner": "Ben Brode",
+ *      "sort": "2018-03-09 11:58:11",
+ *      "Date": {
+ *          "year": "2018",
+ *          "month": "03",
+ *          "day": "09",
+ *          "hours": "11",
+ *          "minutes": "58",
+ *          "seconds": "11"
+ *      }
+ *  }, ... ],
+ *  "history": [{
+ *      "5a99287078d5490270994492": [
+ *          {
+ *              "_id": "5a99287078d5490270994493",
+ *              "conversation": "5a99287078d5490270994492",
+ *              "message": "test",
+ *              "receiver": "Ben Brode",
+ *              "sentAt": "2018-03-02 10:33:20",
+ *              "__v": 0
+ *          },
+ *          {
+ *              "_id": "5a992ab078d5490270994498",
+ *              "conversation": "5a99287078d5490270994492",
+ *              "message": "d",
+ *              "receiver": "Ben Brode",
+ *              "sentAt": "2018-03-02 10:42:56",
+ *              "__v": 0
+ *          }, ...
+ *      }, {...}
+ *   ]
+ * }
+ * @apiError msg {String} Benachrichtigt den Client, dass ein Fehler in der Anfrage enthalten ist
+*/
 router.post('/all', async (req, res) => {
     if (!req.body.user) {
-        res.status(500).send({ msg: "No username given!" }).end();
+        res.status(500).send({
+            msg: "No username given!"
+        }).end();
         return;
     }
     let arr = [];
+
     try {
         arr = await fetchConversationsByUser(req.body.user),
             convWithMessages = {},
@@ -23,7 +70,9 @@ router.post('/all', async (req, res) => {
             let history = await fetchMessageHistory(item._id);
             convWithMessages[item._id] = history;
 
-            let partner = item.partners.filter(x => { return x !== req.body.user }),
+            let partner = item.partners.filter(x => {
+                return x !== req.body.user
+            }),
                 sliced = item.newestMessage.split(' '),
                 date = sliced[0],
                 time = sliced[1];
@@ -37,9 +86,11 @@ router.post('/all', async (req, res) => {
                 hours = splitTime[0],
                 minutes = splitTime[1],
                 seconds = splitTime[2];
-
             clarifiedMessages.push({
-                _id: item._id, partner: partner.toString(), sort: item.newestMessage, Date: {
+                _id: item._id,
+                partner: partner.toString(),
+                sort: item.newestMessage,
+                Date: {
                     year: year,
                     month: month,
                     day: day,
@@ -74,10 +125,16 @@ router.post('/all', async (req, res) => {
             }
         });
 
-        res.status(200).send({ conv: conversationListSorted, history: convWithMessages }).end();
+        res.status(200).send({
+            conv: conversationListSorted,
+            history: convWithMessages
+        }).end();
     } catch (e) {
         console.log(e);
-        res.status(500).send({ msg: 'Error trying to find history for given conversation!', conversations: arr }).end();
+        res.status(500).send({
+            msg: 'Error trying to find history for given conversation!',
+            conversations: arr
+        }).end();
     }
 });
 

@@ -50,17 +50,32 @@ let getTimeNow = function () {
     return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
 };
 
+/**
+ * @api {post} /main Abfragen aller existierenden, aktiven Produkte
+ * @apiName Show all products
+ * @apiGroup Products
+ * 
+ * @apiSuccess Items {Object} Enthält alle aktiven Produkte, welche im Frontend angezeigt werden
+ *
+ * @apiError Error {String} Enthält einen Error-Code welcher angezeigt werden kann
+ * 
+ */
 // Trying to rewrite this into supporting promises, and spreading those across all models
 router.post('/', (req, res) => {
     findAllItemsAsProducts()
         .then((itemQueryResult) => {
+            console.log('First was resolved!');
             return new Promise((resolve, reject) => {
                 findAllImagesForItems(itemQueryResult)
-                    .then((itemsWithImages) => resolve(itemsWithImages))
+                    .then((itemsWithImages) => {
+                        console.log('Second was resolved');
+                        resolve(itemsWithImages)
+                    })
                     .catch((failedItems) => reject(failedItems));
             });
         })
         .then((finishedOffers) => {
+            console.log('Returning within then');
             let itemsObj = jsonArraySort(finishedOffers, 'date')
 
             res.setHeader('Content-Type', 'application/json');
@@ -70,6 +85,7 @@ router.post('/', (req, res) => {
         })
         .catch((e) => {
             console.log(e);
+            console.log('Returning w/ error for searching products!');
             res.setHeader('Content-Type', 'application/json');
             res.status(500).end(JSON.stringify({
                 Error: 'Seems like not all images were matched!',
@@ -79,12 +95,40 @@ router.post('/', (req, res) => {
 });
 
 // Add a new product to the database
-router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (req, res, next) => {
+/** 
+ * @api {post} /main/add Neues Produkt hinzufügen
+ * @apiName Add Product
+ * @apiGroup Product
+ * 
+ * @apiParam {String} product Enthält den Namen des neuen Produkts
+ * @apiParam {String} desc Enthält eine genauere Beschreibung des neuen Produkts
+ * @apiParam {Double} price Beschreibt den Preis des Produkts, welcher vom Verkäufer festgelegt wird
+ * @apiParam {String} user Ersteller des neuen Produkts
+ * @apiParam {String} category Kategorie welches für das neue Produkt eingestellt wurde
+ * 
+ * @apiSuccess success {Boolean} true
+ * @apiError success {Boolean} false
+ * 
+ * @apiParamExample {json} Request payload example
+ * {
+ *  "product": "Testproduct",
+ *  "desc": "API-Description",
+ *  "price": "15.02",
+ *  "user": "mustermann.max",
+ *  "category": "Nachhilfe"
+ *  "files": [Files]
+ * }
+ */
+router.post('/add', multer({
+    storage: storage
+}).array('images', FILE_LIMIT), (req, res, next) => {
     if (!req.files) {
         if (req.body.images) {
             req.files = req.body.images;
         } else {
-            res.writeHead(500, { 'Content-Type': 'application-json' });
+            res.writeHead(500, {
+                'Content-Type': 'application-json'
+            });
             res.end(JSON.stringify({
                 'Error': 'File upload failed',
                 success: false
@@ -177,12 +221,16 @@ router.post('/add', multer({ storage: storage }).array('images', FILE_LIMIT), (r
             reject(err);
         })
         .then((endResult) => {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.writeHead(200, {
+                'Content-Type': 'application/json'
+            });
             res.end(JSON.stringify({
                 success: true
             }));
         }, (e) => {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.writeHead(500, {
+                'Content-Type': 'application/json'
+            });
             res.end(JSON.stringify({
                 Error: 'Unfortunately, it seems that saving the product and images connected to it failed!',
                 msg: e,

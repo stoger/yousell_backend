@@ -114,11 +114,14 @@ let saveImageWithProduct = function (prodID, images) {
         product: prodID,
         url: images
     });
+    return storeImages.save();
+
+
+    
 
     return new Promise((resolve, reject) => {
         return storeImages.save((err, result) => {
             if (err) {
-                ;
                 reject(err);
             }
 

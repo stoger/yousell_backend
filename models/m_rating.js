@@ -15,7 +15,7 @@ let ratingModel = mongoose.model('Rating', ratingSchema, 'rating');
 
 let findUserByName = function (user) {
     return new Promise((resolve, reject) => {
-        ratingModel.find({ username: user }, (err, result) => {
+        return ratingModel.find({ username: user }, (err, result) => {
             if (err) {
                 reject({ location: 'findUserRating', reason: 'error', data: err });
             }
@@ -24,26 +24,29 @@ let findUserByName = function (user) {
                 reject({ location: 'findUserRating', reason: '!result', data: result });
             }
 
-            if (result.length === 0) {
-                reject({ location: 'findUserRating', reason: 'result === 0', data: result })
-            }
-
             resolve(result);
         });
     });
+
+    return ratingModel.find({ username: user });
 };
 
 let saveNewUserToDb = function (user, rating) {
     return new Promise((resolve, reject) => {
+        // Try to make that somehow easier, so much duplicate.......
+
+        
         let itemToInsert = new ratingModel({
             username: user,
-            _1: rating === "1" ? rating : "0",
-            _2: rating === "2" ? rating : "0",
-            _3: rating === "3" ? rating : "0",
-            _4: rating === "4" ? rating : "0",
-            _5: rating === "5" ? rating : "0",
+            _1: rating === "1" ? "1" : "0",
+            _2: rating === "2" ? "1" : "0",
+            _3: rating === "3" ? "1" : "0",
+            _4: rating === "4" ? "1" : "0",
+            _5: rating === "5" ? "1" : "0",
             count: 1
         });
+        return itemToInsert.save();
+
 
         itemToInsert.save((err, doc) => {
             if (err) {
@@ -77,7 +80,7 @@ let updateRatingForUser = (user, rating) => {
 
         if (typeof updatingColumn !== 'undefined') {
             return new Promise((resolve, reject) => {
-                ratingModel.findOneAndUpdate(query, { $inc: { [updatingColumn]: updateBy, 'count': updateBy } }, { new: true }, (err, rowsAffected) => {
+                return ratingModel.findOneAndUpdate(query, { $inc: { [updatingColumn]: updateBy, 'count': updateBy } }, { new: true }, (err, rowsAffected) => {
                     if (err || rowsAffected === 0) {
                         reject({ location: 'updateRating' });
                     }

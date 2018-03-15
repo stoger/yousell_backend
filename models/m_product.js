@@ -1,13 +1,39 @@
 let mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
+    Schema = mongoose.Schema,
+    ObjectId = mongoose.Types.ObjectId;
 
 let productSchema = new Schema({
-    art_name: { type: String, required: true, limit: 50 },
-    art_desc: { type: String, required: true, limit: 400 },
-    art_price: { type: Number, required: true },
-    art_creator: { type: String, required: true, limit: 50 },
-    art_category: { type: String, required: true },
-    date: { type: String, required: true }
+    art_name: {
+        type: String,
+        required: true,
+        limit: 50
+    },
+    art_desc: {
+        type: String,
+        required: true,
+        limit: 400
+    },
+    art_price: {
+        type: Number,
+        required: true
+    },
+    art_creator: {
+        type: String,
+        required: true,
+        limit: 50
+    },
+    art_category: {
+        type: String,
+        required: true
+    },
+    active: {
+        type: Boolean,
+        required: true
+    },
+    date: {
+        type: String,
+        required: true
+    }
 });
 
 let productModel = mongoose.model('Product', productSchema, 'products');
@@ -15,28 +41,30 @@ let productModel = mongoose.model('Product', productSchema, 'products');
 // Searches the Database for elemts which will be mainly used for the site's main page
 // Takes the amount of elemts to skip as parameter
 // Returns a promise which will be handled @ spot of use itself
-let listElements_SortByDate = (skipping, displayLimit) => {
-    return new Promise((resolve, reject) => {
-        productModel.find({}, (err, prod_doc) => {
-            if (err) {
-                reject(err);
-            }
+// let listElements_SortByDate = (skipping, displayLimit) => {
+//     return new Promise((resolve, reject) => {
+//         productModel.find({}, (err, prod_doc) => {
+//             if (err) {
+//                 reject(err);
+//             }
 
-            if (!prod_doc) {
-                reject(new Error({
-                    'Error-Message': 'Trying to fetch products resulted in an empty result, better check the error object',
-                    'Error-Object': prod_doc
-                }));
-            }
+//             if (!prod_doc) {
+//                 reject(new Error({
+//                     'Error-Message': 'Trying to fetch products resulted in an empty result, better check the error object',
+//                     'Error-Object': prod_doc
+//                 }));
+//             }
 
-            resolve(prod_doc);
-        }).sort({ date: -1 }).skip(skipping).limit(displayLimit);
-    });
-};
+//             resolve(prod_doc);
+//         }).sort({ date: -1 }).skip(skipping).limit(displayLimit);
+//     });
+// };
 
 let listElementsByDate = () => {
     return new Promise((resolve, reject) => {
-        return productModel.find({}, (err, doc) => {
+        return productModel.find({
+            active: true
+        }, (err, doc) => {
             if (err) {
                 reject(err);
             }
@@ -46,7 +74,9 @@ let listElementsByDate = () => {
             }
 
             resolve(doc);
-        }).sort({ date: -1 });
+        }).sort({
+            date: -1
+        });
     });
 };
 
@@ -60,8 +90,11 @@ let saveNewProductOffer = (model_params) => {
         art_price: model_params.price,
         art_creator: model_params.user,
         art_category: model_params.category,
+        active: true,
         date: model_params.date
     });
+    //     return productInsertion.save();
+    // }
 
     return new Promise((resolve, reject) => {
         return productInsertion.save((err, result) => {
@@ -79,14 +112,27 @@ let saveNewProductOffer = (model_params) => {
             resolve(result);
         });
     });
-};
+}
 
 let searchProduct = (queryString) => {
-    let art_name_query = { "art_name": { $regex: queryString, $options: "i" } },
-        art_desc_query = { "art_desc": { $regex: queryString, $options: "i" } };
+    let art_name_query = {
+            "art_name": {
+                $regex: queryString,
+                $options: "i"
+            }
+        },
+        art_desc_query = {
+            "art_desc": {
+                $regex: queryString,
+                $options: "i"
+            }
+        };
 
     return new Promise((resolve, reject) => {
-        return productModel.find({ $or: [art_name_query, art_desc_query] }, (err, prod_doc) => {
+        return productModel.find({
+            active: true,
+            $or: [art_name_query, art_desc_query]
+        }, (err, prod_doc) => {
             if (err) {
                 reject(err);
             }
@@ -99,21 +145,48 @@ let searchProduct = (queryString) => {
             }
 
             resolve(prod_doc);
-        }).sort({ date: -1 });
+        }).sort({
+            date: -1
+        });
     });
 
-    let name_query = { "art_name": { $regex: inputString, $options: "i" } },
-        description_query = { "art_desc": { $regex: inputString, $options: "i" } };
-    return productModel.find({ $or: [name_query, description_query] });
+    let name_query = {
+            "art_name": {
+                $regex: inputString,
+                $options: "i"
+            }
+        },
+        description_query = {
+            "art_desc": {
+                $regex: inputString,
+                $options: "i"
+            }
+        };
+    return productModel.find({
+        active: true,
+        $or: [name_query, description_query]
+    });
 }
 
 let fetchByCategory = (category) => {
-    let cat_query = { 'category': { $regex: category, $options: 'i' } };
+    let cat_query = {
+        active: true,
+        'category': {
+            $regex: category,
+            $options: 'i'
+        }
+    };
 
     return new Promise((resolve, reject) => {
-        return productModel.find({ category: cat_query }, (err, doc) => {
+        return productModel.find({
+            category: cat_query
+        }, (err, doc) => {
             if (doc.length === 0 || !doc || err) {
-                reject({ location: 'fetchByCategory', err: err, data: doc });
+                reject({
+                    location: 'fetchByCategory',
+                    err: err,
+                    data: doc
+                });
             }
 
             resolve(doc);
@@ -122,12 +195,30 @@ let fetchByCategory = (category) => {
 };
 
 let fetchByCategoryAndQuery = (category, query) => {
-    let catQuery = { 'art_category': { $regex: category, $options: 'i' } },
-        art_name_query = { 'art_name': { $regex: query, $options: 'i' } },
-        art_desc_query = { 'art_desc': { $regex: query, $options: 'i' } };
+    let catQuery = {
+            'art_category': {
+                $regex: category,
+                $options: 'i'
+            }
+        },
+        art_name_query = {
+            'art_name': {
+                $regex: query,
+                $options: 'i'
+            }
+        },
+        art_desc_query = {
+            'art_desc': {
+                $regex: query,
+                $options: 'i'
+            }
+        };
 
     return new Promise((resolve, reject) => {
-        return productModel.find().and(
+        // surely gotta check this one  !!!!!!!!
+        return productModel.find({
+            active: true
+        }).and(
             [
                 catQuery, {
                     $or: [
@@ -135,9 +226,15 @@ let fetchByCategoryAndQuery = (category, query) => {
                     ]
                 }
             ]
-        ).sort({ date: -1 }).exec((err, doc) => {
+        ).sort({
+            date: -1
+        }).exec((err, doc) => {
             if (doc.length === 0 || !doc || err) {
-                reject({ location: 'fetchByCategoryAndQuery', err: err, document: doc });
+                reject({
+                    location: 'fetchByCategoryAndQuery',
+                    err: err,
+                    document: doc
+                });
             }
 
             resolve(doc);
@@ -147,9 +244,18 @@ let fetchByCategoryAndQuery = (category, query) => {
 
 let fetchByUser = (username) => {
     return new Promise((resolve, reject) => {
-        return productModel.find({ art_creator: { $regex: username, $options: 'i' } },  (err, doc) => {
+        return productModel.find({
+            art_creator: {
+                $regex: username,
+                $options: 'i'
+            }
+        }, (err, doc) => {
             if (doc.length === 0 || !doc || err) {
-                reject({ location: 'fetchByUser', err: err, data: doc });
+                reject({
+                    location: 'fetchByUser',
+                    err: err,
+                    data: doc
+                });
             }
 
             resolve(doc);
@@ -159,9 +265,14 @@ let fetchByUser = (username) => {
 
 let countAllProducts = () => {
     return new Promise((resolve, reject) => {
-        return productModel.count({}, (err, count) => {
+        return productModel.count({
+            active: true
+        }, (err, count) => {
             if (err) {
-                reject({ location: 'countAllProducts', err: err });
+                reject({
+                    location: 'countAllProducts',
+                    err: err
+                });
             }
 
             resolve(count);
@@ -169,12 +280,36 @@ let countAllProducts = () => {
     });
 }
 
+let setProductInactive = (id) => {
+    return new Promise((resolve, reject) => {
+        return productModel.update({
+            _id: ObjectId(id)
+        }, {
+            active: false
+        });
+    });
+}
+
+
+let setProductActive = (id) => {
+    return new Promise((resolve, reject) => {
+        return productModel.update({
+            _id: ObjectId(id)
+        }, {
+            active: true
+        });
+    });
+}
+
+
+
 module.exports = productModel;
 module.exports.searchProduct = searchProduct;
-// module.exports.findProductsSortByDate = listElements_SortByDate;
 module.exports.findProductsSortByDate = listElementsByDate;
 module.exports.saveProduct = saveNewProductOffer;
 module.exports.searchCategory = fetchByCategory;
 module.exports.searchUser = fetchByUser;
 module.exports.listByCatAndQuery = fetchByCategoryAndQuery;
 module.exports.countAllProducts = countAllProducts;
+module.exports.setInactive = setProductInactive;
+module.exports.setActive = setProductActive;

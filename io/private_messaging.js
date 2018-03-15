@@ -24,7 +24,10 @@ module.exports = (io) => {
                     if (unhandledMessages[user.name]) {
                         // console.log('User that has a pending message came on!');
                         let pendingMsg = unhandledMessages[user.name];
-                        activeUsers[user.name].emit('msg', { from: pendingMsg.from, data: pendingMsg.data });
+                        activeUsers[user.name].emit('msg', {
+                            from: pendingMsg.from,
+                            data: pendingMsg.data
+                        });
                     }
                 }
             } else {
@@ -64,9 +67,15 @@ module.exports = (io) => {
                             updateNewestMessageTimestamp(info._id)
                                 .then((resultObj) => {
                                     if (activeUsers[msg.to]) {
-                                        activeUsers[msg.to].emit('msg', { from: msg.from, data: msg.msg });
+                                        activeUsers[msg.to].emit('msg', {
+                                            from: msg.from,
+                                            data: msg.msg
+                                        });
                                     } else {
-                                        unhandledMessages[msg.to] = { from: msg.from, data: msg.msg };
+                                        unhandledMessages[msg.to] = {
+                                            from: msg.from,
+                                            data: msg.msg
+                                        };
                                     }
                                 })
                                 .catch((e) => {
@@ -76,17 +85,24 @@ module.exports = (io) => {
                         }, (storeFailure) => {
                             // console.log('Well well, we\'re in the last possible state. Now, it still didn\'t work, do something against it M8!');
                             // console.log(storeFailure);
-                            return Promise.reject({ 'error': new Error('Total failure (TFM)'), 'data': storeFailure });
+                            return Promise.reject({
+                                'error': new Error('Total failure (TFM)'),
+                                'data': storeFailure
+                            });
                         });
                 }, (err) => {
                     // The conversation does not exist, most likely. Therefore you can't store a message to it 
                     // console.log('Conversation doesn\'exist as it seems... Value passed into this errorHandler:\n', err);
-                    activeUsers[msg.from].emit('send error', { reason: emitServerErrorMessage })
+                    activeUsers[msg.from].emit('send error', {
+                        reason: emitServerErrorMessage
+                    })
                 })
                 .catch((unhandled) => {
                     // console.log('Unhandled error was found...');
                     // console.log(unhandled);
-                    activeUsers[msg.from].emit('send error', { reason: emitServerErrorMessage });
+                    activeUsers[msg.from].emit('send error', {
+                        reason: emitServerErrorMessage
+                    });
                 })
         })
 

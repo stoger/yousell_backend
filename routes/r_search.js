@@ -13,8 +13,37 @@ let findImagesForProduct = require('../models/m_images').findImagesForProduct;
 
 // Home page route.
 // Catch all search requests, check if both category and parameter was given first
+
+/**
+ * @api {post} /search Diverse Suchen
+ * @apiName Search
+ * @apiGroup Search
+ * 
+ * @apiParam {String} category (Optional.)
+ * @apiParam {String} q (Optional.)
+ * @apiParam {String} user (Optional.)
+ * 
+ * @apiParamExample {json} Request payload example (only query parameter 'q')
+ * {
+ *  "q": "Buch"
+ * }
+ * 
+ * @apiParamExample {json} Request payload example (multiple)
+ * {
+ *  "q": "Buch",
+ *  "cateogry": "Schulartikel"
+ * }
+ * 
+ * @apiParamExample {json} Request payload example (user)
+ * {
+ *  "user": "mustermann.max"
+ * }
+ * 
+ * @apiSuccess items {Object} Enthält alle Items welche auf das gegebene Kriterium passen
+ * 
+ * @apiError error {Object} Enthält ein Fehler-Objekt
+ */
 router.post('/', (req, res, next) => {
-    d
     let catParamExists = typeof req.body.category,
         searchParamExists = typeof req.body.q;
 

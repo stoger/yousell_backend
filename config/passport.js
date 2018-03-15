@@ -27,7 +27,7 @@ passport.use('ldap', new LDAPStrategy({
     }
 }));
 
-passport.use('local.signin', new LocalStrategy({
+passport.use('local', new LocalStrategy({
     usernameField: 'username',
     passwordField: 'password',
     passReqToCallback: true
@@ -64,6 +64,8 @@ passport.use('local.signin', new LocalStrategy({
     //         console.log('Passwords dont match');
     //         return done(null, false, { message: 'Wrong password.' });
     //     }
+
     return done(null, username);
+    // return done(username, null);
     // });
 }));

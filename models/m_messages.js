@@ -23,6 +23,8 @@ let storeNewMessage = (id, msg, receivingPartner) => {
             receiver: receivingPartner,
             sentAt: getTimeNow()
         });
+        return message.save();
+
 
         message.save((err, doc) => {
             if (err || !doc) {
@@ -46,8 +48,10 @@ let fetchConversationHistory = (id) => {
             }
 
             resolve(doc);
-        }).sort({ 'createdAt': -1 }).limit(25);
+        }).sort({ 'createdAt': -1 });
     });
+
+    return messageModel.find({ 'conversation': ObjectId(id) }).sort({ 'createdAt': -1 });
 };
 
 module.exports.storeMethodFunc = storeNewMessage;
